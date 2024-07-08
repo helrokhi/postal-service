@@ -1,0 +1,16 @@
+server:
+  port: 8040
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,mailing,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true

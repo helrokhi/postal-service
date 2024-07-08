@@ -1,0 +1,47 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet author="Elena Yankovskaya"
+               id="create-table-postal">
+
+        <createTable schemaName="postal"
+                     tableName="operation"
+                     remarks="Передвижение почтовых отправлений">
+
+            <column name="id"
+                    autoIncrement="true"
+                    type="BIGINT"
+                    remarks="ID операции">
+                <constraints nullable="false"
+                             primaryKey="true"
+                             primaryKeyName="postal_pk"
+                             unique="true"/>
+            </column>
+
+            <column name="mailing_id"
+                    type="BIGINT"
+                    remarks="ID почтового отправления"/>
+
+            <column name="in_office_index"
+                    type="VARCHAR(6)"
+                    remarks="Индекс почтового отделения"/>
+
+            <column name="out_office_index"
+                    type="VARCHAR(6)"
+                    remarks="Индекс почтового отделения"/>
+
+            <column name="operation_type_id"
+                    type="BIGINT"
+                    remarks="ID операции с почтовым отправлением (регистрация, убытие, прибытие получение)"/>
+
+            <column name="operation_date"
+                    type="timestamp with time zone"
+                    remarks="Дата и время операции"/>
+
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,42 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet author="Elena Yankovskaya"
+               id="create-table-office">
+
+        <createTable schemaName="postal"
+                     tableName="office"
+                     remarks="Почтовое отделение">
+
+            <column name="id"
+                    autoIncrement="true"
+                    type="BIGINT"
+                    remarks="ID почтового отделения">
+                <constraints nullable="false"
+                             unique="true"/>
+            </column>
+
+            <column name="index"
+                    type="VARCHAR(6)"
+                    remarks="Индекс почтового отделения">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="office_pk"/>
+            </column>
+
+            <column name="title"
+                    type="VARCHAR(50)"
+                    remarks="Название почтового отделения"/>
+
+            <column name="address"
+                    type="VARCHAR(50)"
+                    remarks="Адрес почтового отделения"/>
+
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
