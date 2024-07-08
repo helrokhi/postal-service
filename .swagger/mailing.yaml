@@ -1,0 +1,214 @@
+openapi: 3.0.3
+info:
+    title: Сервис почтовых отправлений openAPI спецификация
+    version: 0.0.1
+servers: 
+    - url: http://localhost:8080/api/v1/mailing/
+      description: Dev server
+paths:
+  /create:
+    post:
+        summary: Регистрация почтового отправления
+        tags: 
+          - Mailing
+        operationId: createMailing
+        requestBody: 
+            required: true
+            content: 
+                application/json: 
+                    schema:
+                      $ref: "#/components/schemas/MailingDto"
+        responses:
+            '200':
+                description: Successful operation
+                content:
+                    application/json: 
+                      schema: 
+                        $ref: "#/components/schemas/MailingDto"
+            '400':
+                description: Bad request
+  /{id}:
+    get:
+        summary: Получение почтового отправления по идентификатору
+        tags: 
+          - Mailing
+        operationId: getMailing
+        parameters:
+            - name: id
+              in: path
+              required: true
+              schema: 
+                type: string
+        responses:
+            '200':
+                description: Successful operation
+                content:
+                    application/json: 
+                      schema: 
+                        $ref: "#/components/schemas/MailingDto"
+            '400':
+                description: Bad request
+
+    post:
+        summary: Обновление статуса почтового отправления
+        tags: 
+          - Mailing
+        operationId: updateStatus
+        parameters:
+            - name: id
+              in: path
+              required: true
+              schema: 
+                type: string
+            - name: status
+              in: query
+              required: true
+              schema: 
+                type: string
+            - name: office
+              in: query
+              required: true
+              schema: 
+                type: string
+        responses:
+            '200':
+                description: Successful operation
+                content:
+                    application/json: 
+                      schema: 
+                        $ref: "#/components/schemas/MailingDto"
+            '400':
+                description: Bad request
+  /{id}/status:
+    get:
+        summary: Получение статуса почтового отправления по идентификатору
+        tags: 
+          - Mailing
+        operationId: getStatus
+        parameters:
+            - name: id
+              in: path
+              required: true
+              schema: 
+                type: string
+        responses:
+            '200':
+                description: Successful operation
+                content:
+                    application/json: 
+                        schema: 
+                          $ref: "#/components/schemas/Status"
+                      
+            '400':
+                description: Bad request
+  /{id}/history:
+    get:
+        summary: Получение истории почтового отправления по идентификатору
+        tags: 
+          - Mailing
+        operationId: getHistory
+        parameters:
+            - name: id
+              in: path
+              required: true
+              schema: 
+                type: string
+        responses:
+            '200':
+                description: Successful operation
+                content:
+                    application/json:
+                        schema: 
+                          $ref: "#/components/schemas/Operations" 
+                      
+            '400':
+                description: Bad request
+
+components:
+    schemas: 
+        MailingDto:
+            type: object
+            description: Почтовое отправление
+            required:
+                - beneficiaryName
+                - mailingTypeId
+                - beneficiaryOfficeIndex
+                - beneficiaryAddress
+                - statusId
+                - officeIndex
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: идентификатор
+                beneficiaryName:
+                    type: string
+                    description: имя получателя
+                mailingTypeId:
+                    type: string
+                    format: uuid
+                    description: тип (письмо, посылка, бандероль, открытка)
+                beneficiaryOfficeIndex:
+                    type: string
+                    description: индекс получателя
+                beneficiaryAddress:
+                    type: string
+                    description: адрес получателя
+                statusId:
+                    type: string
+                    description: статус
+                    enum: 
+                      - LETTER
+                      - PARCEL
+                      - PARCEL_POST
+                      - CARD
+                officeIndex:
+                    type: string
+                    description: индекс почтового отделения
+        OperationDto:
+            type: object
+            description: Операция с почтовым отправлением
+            required:
+                - inOfficeIndex
+                - outOfficeIndex
+                - operationTypeId
+                - operationDate
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: идентификатор
+                mailingId:
+                    type: string
+                    format: uuid
+                    description: идентификатор почтового отправления
+                inOfficeIndex:
+                    type: string
+                    description: индекс почтового отделения
+                outOfficeIndex:
+                    type: string
+                    description: индекс почтового отделения
+                operationTypeId:
+                    type: string
+                    description: тип операции
+                    enum: 
+                      - REGISTRATION
+                      - ARRIVAL
+                      - DEPARTURE
+                      - RECEIPT
+                operationDate:
+                    type: string
+                    description: Дата регистрации
+                    format: date-time
+        Operations:
+            type: array
+            items: 
+                $ref: "#/components/schemas/OperationDto"
+        Status:
+            type: string
+            description: Статус почтового отправления
+            enum: 
+                - REGISTRATION
+                - ARRIVAL
+                - DEPARTURE
+                - RECEIPT

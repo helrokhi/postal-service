@@ -2,9 +2,6 @@ database:
   url: http://localhost:8050
 
 mailing:
-  url: http://localhost:8040
-
-frontend:
   url: http://localhost:8080
 
 spring:
