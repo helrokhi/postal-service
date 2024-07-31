@@ -1,26 +1,26 @@
 package ru.postal.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.postal.dto.MailingDto;
+import ru.postal.dto.OperationDto;
+import ru.postal.dto.enums.OperationType;
 import ru.postal.service.MailingService;
 import ru.postal.service.OperationService;
 
-//@RunWith(SpringRunner.class)
-//@SpringBootTest
+import java.time.OffsetDateTime;
+import java.util.List;
+
 @WebMvcTest(MailingController.class)
 class MailingControllerTest {
-
-//    @Autowired
-//    private MailingController mailingController;
 
     @MockBean
     private MailingService mailingService;
@@ -57,7 +57,9 @@ class MailingControllerTest {
         String mailingJson = objectMapper.writeValueAsString(mailingDto);
 
         mockMvc
-                .perform(MockMvcRequestBuilders.get("/mailing/{id}", 1L)
+                .perform(
+                        MockMvcRequestBuilders
+                                .get("/mailing/{id}", 1L)
                 )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(mailingJson));
@@ -69,14 +71,132 @@ class MailingControllerTest {
     }
 
     @Test
-    void getHistory() {
+    void getHistory() throws Exception {
+        List<OperationDto> history = List.of(
+                new OperationDto(1L, 1L, "100100",
+                        "200200", 1L, OffsetDateTime.now()),
+                new OperationDto(2L, 1L, "200200",
+                        "300300", 2L, OffsetDateTime.now())
+        );
 
+        Mockito.when(operationService.getOperationMovementHistory(1L))
+                .thenReturn(history);
 
+        mockMvc
+                .perform(
+                        MockMvcRequestBuilders
+                                .get("/mailing/{id}/history", 1L)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$",
+                        Matchers.hasSize(history.size())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].id",
+                        Matchers.containsInAnyOrder(1, 2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[*].inOfficeIndex",
+                        Matchers.containsInAnyOrder("100100", "200200")));
+
+        Mockito.verify(operationService, Mockito.times(1))
+                .getOperationMovementHistory(1L);
     }
 
     @Test
-    void getStatus() {
+    void getStatusArrival() throws Exception {
+        MailingDto mailingDto = new MailingDto();
 
+        mailingDto.setId(2L);
+        mailingDto.setStatusId(2L);
+
+        String operationName = OperationType.ARRIVAL.getName();
+
+        Mockito.when(mailingService.getStatus(2L))
+                .thenReturn(operationName);
+
+        mockMvc
+                .perform(
+                        MockMvcRequestBuilders
+                                .get("/mailing/{id}/status", 2L)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(operationName));
+
+
+        Mockito.verify(mailingService, Mockito.times(1))
+                .getStatus(2L);
+    }
+
+    @Test
+    void getStatusRegistration() throws Exception {
+        MailingDto mailingDto = new MailingDto();
+
+        mailingDto.setId(1L);
+        mailingDto.setStatusId(1L);
+
+        String operationName = OperationType.REGISTRATION.getName();
+
+        Mockito.when(mailingService.getStatus(1L))
+                .thenReturn(operationName);
+
+        mockMvc
+                .perform(
+                        MockMvcRequestBuilders
+                                .get("/mailing/{id}/status", 1L)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(operationName));
+
+
+        Mockito.verify(mailingService, Mockito.times(1))
+                .getStatus(1L);
+    }
+
+    @Test
+    void getStatusDeparture() throws Exception {
+        MailingDto mailingDto = new MailingDto();
+
+        mailingDto.setId(3L);
+        mailingDto.setStatusId(3L);
+
+        String operationName = OperationType.DEPARTURE.getName();
+
+        Mockito.when(mailingService.getStatus(3L))
+                .thenReturn(operationName);
+
+        mockMvc
+                .perform(
+                        MockMvcRequestBuilders
+                                .get("/mailing/{id}/status", 3L)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(operationName));
+
+
+        Mockito.verify(mailingService, Mockito.times(1))
+                .getStatus(3L);
+    }
+
+    @Test
+    void getStatusReceipt() throws Exception {
+        MailingDto mailingDto = new MailingDto();
+
+        mailingDto.setId(4L);
+        mailingDto.setStatusId(4L);
+
+        String operationName = OperationType.RECEIPT.getName();
+
+        Mockito.when(mailingService.getStatus(4L))
+                .thenReturn(operationName);
+
+        mockMvc
+                .perform(
+                        MockMvcRequestBuilders
+                                .get("/mailing/{id}/status", 4L)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(operationName));
+
+
+        Mockito.verify(mailingService, Mockito.times(1))
+                .getStatus(4L);
     }
 
     @Test
