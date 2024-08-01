@@ -1,23 +1,29 @@
 package ru.postal.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jooq.db.tables.records.MailingRecord;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.postal.dto.MailingDto;
 import ru.postal.dto.OperationDto;
+import ru.postal.dto.RegMailingDto;
 import ru.postal.dto.enums.OperationType;
+import ru.postal.repository.mapper.MailingMapping;
 import ru.postal.service.MailingService;
 import ru.postal.service.OperationService;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @WebMvcTest(MailingController.class)
 class MailingControllerTest {
@@ -27,6 +33,9 @@ class MailingControllerTest {
 
     @MockBean
     private OperationService operationService;
+
+    @MockBean
+    private MailingMapping mailingMapper;
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,6 +70,7 @@ class MailingControllerTest {
                         MockMvcRequestBuilders
                                 .get("/mailing/{id}", 1L)
                 )
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(mailingJson));
 
@@ -87,6 +97,7 @@ class MailingControllerTest {
                         MockMvcRequestBuilders
                                 .get("/mailing/{id}/history", 1L)
                 )
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$",
                         Matchers.hasSize(history.size())))
@@ -116,6 +127,7 @@ class MailingControllerTest {
                         MockMvcRequestBuilders
                                 .get("/mailing/{id}/status", 2L)
                 )
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(operationName));
 
@@ -141,6 +153,7 @@ class MailingControllerTest {
                         MockMvcRequestBuilders
                                 .get("/mailing/{id}/status", 1L)
                 )
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(operationName));
 
@@ -166,6 +179,7 @@ class MailingControllerTest {
                         MockMvcRequestBuilders
                                 .get("/mailing/{id}/status", 3L)
                 )
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(operationName));
 
@@ -191,6 +205,7 @@ class MailingControllerTest {
                         MockMvcRequestBuilders
                                 .get("/mailing/{id}/status", 4L)
                 )
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string(operationName));
 
@@ -200,7 +215,42 @@ class MailingControllerTest {
     }
 
     @Test
-    void updateStatus() {
+    void updateStatus() throws Exception {
+        MailingDto mailingDto = new MailingDto();
+
+        mailingDto.setId(1L);
+        mailingDto.setBeneficiaryName("John");
+        mailingDto.setMailingTypeId(4L);
+        mailingDto.setBeneficiaryOfficeIndex("125478");
+        mailingDto.setBeneficiaryAddress("125478");
+        mailingDto.setStatusId(3L);
+        mailingDto.setOfficeIndex("900500");
+
+        String status = "4";
+        String office = "300300";
+
+        mailingDto.setStatusId(Long.valueOf(status));
+
+        Mockito.when(mailingService.updateStatusMailing(1L, Long.valueOf(status), office))
+                .thenReturn(mailingDto);
+
+        String mailingJson = objectMapper.writeValueAsString(mailingDto);
+
+        mockMvc
+                .perform(
+                        MockMvcRequestBuilders
+                                .post("/mailing/{id}", 1L)
+                                .param("status", status)
+                                .param("office", office)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(mailingJson));
+
+
+        Mockito.verify(mailingService, Mockito.times(1))
+                .updateStatusMailing(1L, Long.valueOf(status), office);
+
 
     }
 }
