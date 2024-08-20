@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  mailing:
+    image: helrokhitest4/postal:mailing
+    container_name: "mailing"
+    networks:
+      - postal
+    ports:
+      - "8080:8080"
+
+  database:
+    image: helrokhitest4/postal:database
+    container_name: "database"
+    networks:
+      - postal
+    ports:
+      - "8050:8050"
+
+networks:
+  postal:
+    driver: bridge

@@ -2,6 +2,7 @@ package ru.postal.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jooq.db.tables.records.MailingRecord;
+import jooq.db.tables.records.OperationRecord;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -17,7 +18,6 @@ import ru.postal.dto.MailingDto;
 import ru.postal.dto.OperationDto;
 import ru.postal.dto.RegMailingDto;
 import ru.postal.dto.enums.OperationType;
-import ru.postal.repository.mapper.MailingMapping;
 import ru.postal.service.MailingService;
 import ru.postal.service.OperationService;
 
@@ -34,9 +34,6 @@ class MailingControllerTest {
     @MockBean
     private OperationService operationService;
 
-    @MockBean
-    private MailingMapping mailingMapper;
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -44,7 +41,65 @@ class MailingControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void createMailing() {
+    void createMailing() throws Exception {
+        RegMailingDto regMailingDto = new RegMailingDto();
+
+        regMailingDto.setBeneficiaryName("John");
+        regMailingDto.setType("1");
+        regMailingDto.setBeneficiaryIndex("125478");
+        regMailingDto.setBeneficiaryAddress("125478");
+        regMailingDto.setOfficeIndex("900500");
+
+        String beneficiaryName = regMailingDto.getBeneficiaryName();
+        Long typeId = Long.valueOf(regMailingDto.getType());
+        String beneficiaryIndex = regMailingDto.getBeneficiaryIndex();
+        String beneficiaryAddress = regMailingDto.getBeneficiaryIndex();
+        Long statusId = OperationType.REGISTRATION.getId();
+        String officeIndex = regMailingDto.getOfficeIndex();
+
+        Long mailingId = 12L;
+
+        MailingRecord mailingRecord = new MailingRecord();
+        mailingRecord.setId(mailingId);
+        mailingRecord.setBeneficiaryName(beneficiaryName);
+        mailingRecord.setMailingTypeId(typeId);
+        mailingRecord.setOfficeIndex(beneficiaryIndex);
+        mailingRecord.setBeneficiaryAddress(beneficiaryAddress);
+        mailingRecord.setStatusId(statusId);
+        mailingRecord.setOfficeIndex(officeIndex);
+
+        OperationRecord operationRecord = new OperationRecord();
+        operationRecord.setId(6L);
+        operationRecord.setMailingId(mailingId);
+        operationRecord.setInOfficeIndex(officeIndex);
+        operationRecord.setOutOfficeIndex(officeIndex);
+        operationRecord.setOperationTypeId(1L);
+        operationRecord.setOperationDate(OffsetDateTime.now());
+
+        String regJson = objectMapper.writeValueAsString(regMailingDto);
+
+        Mockito.when(mailingService.createMailing(regMailingDto))
+                .thenReturn(Optional.of(mailingRecord));
+
+        Mockito.when(operationService.createOperation(mailingId, statusId, officeIndex, officeIndex))
+                .thenReturn(Optional.of(operationRecord));
+
+        mockMvc
+                .perform(
+                        MockMvcRequestBuilders
+                                .post("/mailing/create")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(regJson)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(""));
+
+        Mockito.verify(mailingService, Mockito.times(1))
+                .createMailing(regMailingDto);
+
+        Mockito.verify(operationService, Mockito.times(1))
+                .createOperation(mailingId, statusId, officeIndex, officeIndex);
 
     }
 
